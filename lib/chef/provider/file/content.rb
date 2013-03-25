@@ -24,7 +24,7 @@ class Chef
       class Content < Chef::Provider::FileContentBase
         def file_for_provider
           if @new_resource.content
-            tempfile = Tempfile.open(tempfile_basename, tempfile_dirname)
+            tempfile = Tempfile.open(tempfile_basename, tempfile_dirname, tempfile_open_flags)
             tempfile.write(@new_resource.content)
             tempfile.close
             tempfile

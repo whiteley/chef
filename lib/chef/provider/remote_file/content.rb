@@ -40,6 +40,7 @@ class Chef
             sources = @new_resource.source
             raw_file, @raw_file_source = try_multiple_sources(sources)
           end
+          # FIXME: CHEF-3903 binary mode in windows is still busted in this provider
           raw_file
         end
 

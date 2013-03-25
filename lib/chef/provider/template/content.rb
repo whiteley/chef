@@ -42,6 +42,7 @@ class Chef
           file = nil
           render_template(IO.read(template_location), context) { |t| file = t }
           file
+          # FIXME: CHEF-3903 windows binary mode is still busted on this one
         end
 
         def template_finder

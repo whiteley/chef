@@ -68,6 +68,9 @@ class Chef
         Chef::Config[:file_deployment_uses_destdir] ? ::File.dirname(@new_resource.path) : Dir::tmpdir
       end
 
+      def tempfile_open_flags
+        @new_resource.binary_mode ? "wb+" : "w+"
+      end
     end
   end
 end

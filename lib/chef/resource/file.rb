@@ -44,6 +44,7 @@ class Chef
         @path = name
         @backup = 5
         @action = "create"
+        @binary_mode = true
         @allowed_actions.push(:create, :delete, :touch, :create_if_missing)
         @provider = Chef::Provider::File
         @deployment_strategy = Chef::Config[:file_deployment_strategy]
@@ -62,6 +63,14 @@ class Chef
                       :content,
           arg,
           :kind_of => String
+        )
+      end
+
+      def binary_mode(arg=nil)
+        set_or_return(
+          :binary_mode,
+          arg,
+          :kind_of => [ TrueClass, FalseClass ]
         )
       end
 
