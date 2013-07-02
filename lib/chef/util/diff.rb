@@ -16,6 +16,7 @@
 #
 
 require 'chef/mixin/shell_out'
+require 'diff/lcs'
 
 class Chef
   class Util
@@ -84,8 +85,7 @@ class Chef
           #         (which is the mixlib-shellout default for all rubies all the time).
           Chef::Log.debug("running: diff -u #{old_file} #{new_file}")
           locale = ( Object.const_defined? :Encoding ) ? nil : 'C'
-          result = shell_out("diff -u #{old_file} #{new_file}", :env => {'LC_ALL' => locale})
-
+          result = shell_out("ldiff -u #{old_file} #{new_file}", :env => {'LC_ALL' => locale})
         rescue Exception => e
           # Should *not* receive this, but in some circumstances it seems that
           # an exception can be thrown even using shell_out instead of shell_out!
