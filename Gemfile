@@ -15,7 +15,8 @@ group(:development, :test) do
 
   gem 'ruby-shadow', :platforms => :ruby unless RUBY_PLATFORM.downcase.match(/(darwin|freebsd|aix)/)
 #  gem 'awesome_print'
-#  gem 'pry'
+  gem 'pry'
+  gem 'pry-nav'
 end
 
 platforms :mswin, :mingw do

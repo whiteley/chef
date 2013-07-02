@@ -53,6 +53,8 @@ end
 
 require 'chef'
 require 'chef/knife'
+require 'pry'
+require 'pry-nav'
 
 Dir['lib/chef/knife/**/*.rb'].
   map {|f| f.gsub('lib/', '') }.

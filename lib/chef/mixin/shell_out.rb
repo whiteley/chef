@@ -50,7 +50,8 @@ class Chef
         _options = _command_args.last
 
         DEPRECATED_OPTIONS.each do |old_option, new_option|
-          # Edge case: someone specifies :command_log_level and 'command_log_level' in the option hash
+          # Edge case: someone specifies :command_log_level and
+          # 'command_log_level' in the option hash
           next unless value = _options.delete(old_option) || _options.delete(old_option.to_s)
           deprecate_option old_option, new_option
           _options[new_option] = value
