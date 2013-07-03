@@ -6,3 +6,8 @@ rvm:
 
 script: bundle exec rake spec
 
+branches:
+  only:
+    - master
+    - 10-stable
+    - 11-stable
