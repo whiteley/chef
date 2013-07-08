@@ -61,7 +61,7 @@ class Chef
       end
 
       private
-      
+
       def do_diff(old_file, new_file)
         if Chef::Config[:diff_disabled]
           return "(diff output suppressed by config)"
@@ -99,7 +99,6 @@ class Chef
           else
             diff_str = encode_diff(diff_str)
             @diff = diff_str.split("\n")
-            # @diff.delete("\\ No newline at end of file")
             return "(diff available)"
           end
         else
