@@ -63,53 +63,55 @@ class Chef
       private
 
       def udiff(old_file, new_file)
-        res = Mash.new
-        res['diff_str'] = ""
-        res['err_str'] = ""
-        
-        file_length_difference = 0
-
         begin
+          result = Mash.new
+          result['stdout'] = ""
+          result['stderr'] = ""
+        
+          file_length_difference = 0
+
           old_data = IO::readlines(old_file).map { |e| e.chomp }
           new_data = IO::readlines(new_file).map { |e| e.chomp }
           
           diffs = ::Diff::LCS.diff(old_data, new_data)
-        rescue Exception => e
-          res['err_str'] << e.message
-          return res
-        end
 
-        if diffs.empty?
-          res['diff_str'] << "No differences encountered\n" if !old_data.empty? || !new_data.empty?
-          return res
-        end
-
-        # write diff header (standard unified format)
-        ft = File.stat(old_file).mtime.localtime.strftime('%Y-%m-%d %H:%M:%S.%N %z')
-        res['diff_str'] << "--- #{old_file}\t#{ft}\n"
-        ft = File.stat(new_file).mtime.localtime.strftime('%Y-%m-%d %H:%M:%S.%N %z')
-        res['diff_str'] << "+++ #{new_file}\t#{ft}\n"
-
-        # loop over hunks. if a hunk overlaps with the last hunk, join
-        # them. otherwise, print out the old one.
-        oldhunk = hunk = nil
-
-        diffs.each do |piece|
-          begin
-            hunk = ::Diff::LCS::Hunk.new(old_data, new_data, piece, 3, file_length_difference)
-            file_length_difference = hunk.file_length_difference
-
-            next unless oldhunk
-            next if hunk.merge(oldhunk)
-
-            res['diff_str'] << oldhunk.diff(:unified) << "\n"
-          ensure
-            oldhunk = hunk
+          if diffs.empty?
+            unless old_data.empty? && new_data.empty?
+              result['stdout'] << "No differences encountered\n"
+            end
+            return result
           end
-        end
 
-        res['diff_str'] << oldhunk.diff(:unified) << "\n"
-        return res
+          # write diff header (standard unified format)
+          ft = File.stat(old_file).mtime.localtime.strftime('%Y-%m-%d %H:%M:%S.%N %z')
+          result['stdout'] << "--- #{old_file}\t#{ft}\n"
+          ft = File.stat(new_file).mtime.localtime.strftime('%Y-%m-%d %H:%M:%S.%N %z')
+          result['stdout'] << "+++ #{new_file}\t#{ft}\n"
+
+          # loop over hunks. if a hunk overlaps with the last hunk, join
+          # them. otherwise, print out the old one.
+          oldhunk = hunk = nil
+
+          diffs.each do |piece|
+            begin
+              hunk = ::Diff::LCS::Hunk.new(old_data, new_data, piece, 3, file_length_difference)
+              file_length_difference = hunk.file_length_difference
+
+              next unless oldhunk
+              next if hunk.merge(oldhunk)
+
+              result['stdout'] << oldhunk.diff(:unified) << "\n"
+            ensure
+              oldhunk = hunk
+            end
+          end
+
+          result['stdout'] << oldhunk.diff(:unified) << "\n"
+        rescue Exception => e
+          result['stderr'] << e.message
+        ensure
+          return result
+        end
       end
         
       def do_diff(old_file, new_file)
@@ -136,7 +138,7 @@ class Chef
            Chef::Log.debug("running: diff -u #{old_file} #{new_file}")
           # locale = ( Object.const_defined? :Encoding ) ? nil : 'C'
           # result = shell_out("ldiff -u #{old_file} #{new_file}", :env => {'LC_ALL' => locale})
-          res = udiff(old_file, new_file)
+          result = udiff(old_file, new_file)
         rescue Exception => e
           # Should *not* receive this, but in some circumstances it seems that
           # an exception can be thrown even using shell_out instead of shell_out!
@@ -150,28 +152,7 @@ class Chef
         # Also on some platforms (Solaris) diff outputs a single line
         # when there are no differences found. Look for this line
         # before analyzing diff output.
-        if !res['err_str'].empty?
-          return "Could not determine diff. Error: #{res.err_str}\n"
-          if !res['diff_str'].empty? && res['diff_str'] != "No differences encountered\n"
-            if res['diff_str'].length > diff_output_threshold
-              return
-              "(long diff of over #{diff_output_threshold} characters, diff output suppressed)"
-            end  
-          else
-            if Object.const_defined? :Encoding # ruby >= 1.9
-              if (res['diff_str'].encoding == Encoding::ASCII_8BIT &&
-                  res['diff_str'].encoding != Encoding.devault_external && RUBY_VERSION.to_f < 2.0)
-                res['diff_str'] = res['diff_str'].force_encoding(Encoding.default_external)
-              end
-              res['diff_str'].encode!('UTF-8', :invalid => :replace, :undef => :replace, :replace => '?')
-            end
-            @diff = res['diff_str'].split("\n")
-            return "(diff available)"
-          end
-        else
-          return "(no diff)"
-        end
-          
+
 =begin
         if !result.stdout.empty? && result.stdout != "No differences encountered\n"
           if result.stdout.length > diff_output_threshold
@@ -197,9 +178,35 @@ class Chef
         else
           return "(no diff)"
         end
-=end
       end
+=end
 
+        if !result['stdout'].empty? && result['stdout'] != "No differences encountered\n"
+          if result['stdout'].length > diff_output_threshold
+            return "(long diff of over #{diff_output_threshold} characters, diff output suppressed)"
+          else
+            diff_str = result['stdout']
+            if  Object.const_defined? :Encoding  # ruby >= 1.9
+              if ( diff_str.encoding == Encoding::ASCII_8BIT &&
+                diff_str.encoding != Encoding.default_external &&
+                RUBY_VERSION.to_f < 2.0 )
+                # @todo mixlib-shellout under ruby 1.9 hands back an ASCII-8BIT encoded string, which needs to
+                # be fixed to the default external encoding -- this should be moved into mixlib-shellout
+                diff_str = diff_str.force_encoding(Encoding.default_external)
+              end
+              diff_str.encode!('UTF-8', :invalid => :replace, :undef => :replace, :replace => '?')
+            end
+            @diff = diff_str.split("\n")
+            @diff.delete("\\ No newline at end of file")
+            return "(diff available)"
+          end
+        elsif !result['stderr'].empty?
+          return "Could not determine diff. Error: #{result['stderr']}"
+        else
+          return "(no diff)"
+        end
+      end
+        
       def is_binary?(path)
         File.open(path) do |file|
           # XXX: this slurps into RAM, but we should have already checked our diff has a reasonable size

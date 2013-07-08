@@ -228,7 +228,6 @@ describe Chef::Util::Diff, :uses_diff => true do
         new_tempfile.close
       end
       it "calling for_output should return a valid diff" do
-        binding.pry
         differ.for_output.join("\\n").should match(/\A--- .*\\n\+\+\+ .*\\n@@/m)
       end
       it "calling for_reporting should return a utf-8 string" do
