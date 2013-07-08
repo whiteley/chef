@@ -294,6 +294,11 @@ describe Chef::Application do
   end
 
   describe "configuration errors" do
+    before(:all) do
+      @saved_argv = ARGV
+      ARGV = []
+    end
+
     before do
       Process.stub!(:exit).and_return(true)
     end
@@ -344,6 +349,10 @@ describe Chef::Application do
         create_config_file("text that should break the config parsing")
         raises_informative_fatals_on_configure_chef
       end
+    end
+
+    after(:all) do
+      ARGV = @saved_argv
     end
   end
 end

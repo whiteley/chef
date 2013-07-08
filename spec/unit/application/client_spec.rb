@@ -136,6 +136,11 @@ describe Chef::Application::Client, "setup_application" do
 end
 
 describe Chef::Application::Client, "configure_chef" do
+  before(:all) do
+    @saved_argv = ARGV
+    ARGV = []
+  end
+  
   before do
     @app = Chef::Application::Client.new
     @app.configure_chef
@@ -147,6 +152,10 @@ describe Chef::Application::Client, "configure_chef" do
     else
       Chef::Config[:color].should be_true
     end
+  end
+
+  after(:all) do
+    ARGV = @saved_argv
   end
 end
 
