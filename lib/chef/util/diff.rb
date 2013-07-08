@@ -61,6 +61,7 @@ class Chef
       end
 
       private
+      
       def do_diff(old_file, new_file)
         if Chef::Config[:diff_disabled]
           return "(diff output suppressed by config)"
@@ -84,7 +85,7 @@ class Chef
         rescue Exception => e
           return "Could not determine diff. Error: #{e.message}"
         end
-        
+
         # diff will set a non-zero return code even when there's
         # valid stdout results, if it encounters something unexpected
         # So as long as we have output, we'll show it.
@@ -98,14 +99,14 @@ class Chef
           else
             diff_str = encode_diff(diff_str)
             @diff = diff_str.split("\n")
-            @diff.delete("\\ No newline at end of file")
+            # @diff.delete("\\ No newline at end of file")
             return "(diff available)"
           end
         else
           return "(no diff)"
         end
       end
-      
+
       def is_binary?(path)
         File.open(path) do |file|
           # XXX: this slurps into RAM, but we should have already checked our diff has a reasonable size
@@ -167,10 +168,6 @@ class Chef
 
       def encode_diff(diff_str)
         if Object.const_defined? :Encoding  # ruby >= 1.9
-          if (diff_str.encoding == Encoding::ASCII_8BIT &&
-              diff_str.encoding != Encoding.default_external && RUBY_VERSION.to_f < 2.0)
-            diff_str = diff_str.force_encoding(Encoding.default_external)
-          end
           diff_str.encode!('UTF-8', :invalid => :replace, :undef => :replace, :replace => '?')
         end
         return diff_str
