@@ -160,6 +160,11 @@ describe Chef::Application::Client, "configure_chef" do
 end
 
 describe Chef::Application::Client, "run_application", :unix_only do
+  before(:all) do
+    @saved_argv = ARGV
+    ARGV = []
+  end
+
   before do
     @pipe = IO.pipe
     @app = Chef::Application::Client.new
@@ -179,5 +184,9 @@ describe Chef::Application::Client, "run_application", :unix_only do
     Process.wait
     IO.select([@pipe[0]], nil, nil, 0).should_not be_nil
     @pipe[0].gets.should == "finished\n"
+  end
+
+  after(:all) do
+    ARGV = @saved_argv
   end
 end

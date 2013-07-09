@@ -79,20 +79,12 @@ class Chef
         return "(new content is binary, diff output suppressed)" if is_binary?(new_file)
 
         begin
-          # @TODO change debug message? 
           Chef::Log.debug("running: diff -u #{old_file} #{new_file}")
           diff_str = udiff(old_file, new_file)
         rescue Exception => e
           return "Could not determine diff. Error: #{e.message}"
         end
 
-        # diff will set a non-zero return code even when there's
-        # valid stdout results, if it encounters something unexpected
-        # So as long as we have output, we'll show it.
-        #
-        # Also on some platforms (Solaris) diff outputs a single line
-        # when there are no differences found. Look for this line
-        # before analyzing diff output.
         if !diff_str.empty? && diff_str != "No differences encountered\n"
           if diff_str.length > diff_output_threshold
             return "(long diff of over #{diff_output_threshold} characters, diff output suppressed)"
