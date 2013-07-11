@@ -30,11 +30,8 @@ describe Chef::Mixin::ShellOut do
     let(:command_args) { [ cmd, options ] }
     let(:cmd) { "echo '#{rand(1000)}'" }
 
-    let(:capture_log_output) {
-      output = StringIO.new
-      Chef::Log.logger = Logger.new(output)
-      return output
-    }
+    let(:output) { StringIO.new }
+    let!(:capture_log_output) { Chef::Log.logger = Logger.new(output)  }
     let(:assume_deprecation_log_level) { Chef::Log.stub!(:level).and_return(:warn) }
 
     context 'without options' do
@@ -56,8 +53,7 @@ describe Chef::Mixin::ShellOut do
 
     def self.should_emit_deprecation_warning_about(old_option, new_option)
       it 'should emit a deprecation warning' do
-        assume_deprecation_log_level
-        output = capture_log_output
+        assume_deprecation_log_level and capture_log_output
         subject
         output.string.should match /DEPRECATION:/
         output.string.should match Regexp.escape(old_option.to_s)
