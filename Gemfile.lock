@@ -14,6 +14,13 @@ GIT
       bundler (~> 1.2)
       thor (~> 0.18)
 
+GIT
+  remote: https://github.com/whiteley/mixlib-authentication.git
+  revision: b459644236cd98cd6268e65620b528dda490d20e
+  branch: ssh-agent-wip
+  specs:
+    mixlib-authentication (1.4.2)
+
 PATH
   remote: .
   specs:
@@ -196,7 +203,6 @@ GEM
     method_source (0.8.2)
     mixlib-archive (0.4.1)
       mixlib-log
-    mixlib-authentication (1.4.2)
     mixlib-cli (1.7.0)
     mixlib-config (2.2.4)
     mixlib-log (1.7.1)
@@ -212,7 +218,7 @@ GEM
       net-ssh (>= 2.6.5)
     net-sftp (2.1.2)
       net-ssh (>= 2.6.5)
-    net-ssh (4.1.0)
+    net-ssh (4.2.0)
     net-ssh-gateway (2.0.0)
       net-ssh (>= 4.0.0)
     net-ssh-multi (1.2.1)
@@ -401,6 +407,8 @@ DEPENDENCIES
   cheffish (~> 13)
   chefstyle!
   inspec
+  mixlib-authentication!
+  net-ssh (>= 4.2.0)
   netrc
   octokit
   ohai (~> 13)

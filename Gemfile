@@ -12,6 +12,10 @@ gem "ohai", "~> 13"
 gem "chef-config", path: File.expand_path("../chef-config", __FILE__) if File.exist?(File.expand_path("../chef-config", __FILE__))
 gem "cheffish", "~> 13" # required for rspec tests
 
+# CHEF-2381
+gem "net-ssh", ">= 4.2.0"
+gem "mixlib-authentication", git: "https://github.com/whiteley/mixlib-authentication.git", branch: "ssh-agent-wip"
+
 group(:omnibus_package) do
   gem "appbundler"
   gem "rb-readline"
